@@ -1,31 +1,78 @@
-<div class="container mt-4">
-  <h2>Liste des Tâches</h2>
-  <ul class="list-group mb-4">
-    <li *ngFor="let todo of todos" class="list-group-item">
-      <h5>{{ todo.title }}</h5>
-      <p>{{ todo.description }}</p>
-      <p>Status : {{ todo.status === 0 ? 'En cours' : 'Terminé' }}</p>
-      <small>Créée le : {{ todo.created_at | date:'short' }}</small>
-    </li>
-  </ul>
+<div class="container my-5">
 
-  <h2>Ajouter une nouvelle tâche</h2>
-  <form (ngSubmit)="createTodo()">
-    <div class="form-group">
-      <label for="title">Titre</label>
-      <input type="text" id="title" [(ngModel)]="newTodo.title" name="title" class="form-control" required />
+  <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+      integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"></script>
+  </head>
+  <h1 class="text-center mb-5">Gestionnaire de Tâches</h1>
+
+  <div class="mb-4">
+    <h3 class="mb-3">Liste des Tâches</h3>
+    <div *ngIf="todos.length > 0; else noTasks" class="row row-cols-1 g-4">
+      <div *ngFor="let todo of todos" class="col">
+        <div class="card border-primary shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-primary">{{ todo.title }}</h5>
+            <p class="card-text text-secondary">{{ todo.description }}</p>
+            <p>
+              <span class="badge" [class.bg-success]="todo.status === 1" [class.bg-warning]="todo.status === 0">
+                {{ todo.status === 1 ? 'Terminé' : 'En cours' }}
+              </span>
+            </p>
+            <p class="text-muted">
+              Créée le : {{ todo.created_at | date: 'short' }}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="description">Description</label>
-      <textarea id="description" [(ngModel)]="newTodo.description" name="description" class="form-control"></textarea>
+
+    <ng-template #noTasks>
+      <p class="text-muted text-center">Aucune tâche pour le moment. Ajoutez-en une !</p>
+    </ng-template>
+  </div>
+
+  <div class="text-center">
+    <button class="btn btn-primary" (click)="openModal()">+ Ajouter une tâche</button>
+  </div>
+
+  <div class="modal fade" id="addTaskModal" #addTaskModal tabindex="-1" aria-labelledby="addTaskModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addTaskModalLabel">Ajouter une nouvelle tâche</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="createTodo()">
+            <div class="mb-3">
+              <label for="title" class="form-label">Titre</label>
+              <input type="text" id="title" [(ngModel)]="newTodo.title" name="title" class="form-control"
+                placeholder="Entrez un titre..." required />
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea id="description" [(ngModel)]="newTodo.description" name="description" class="form-control"
+                rows="3" placeholder="Entrez une description..."></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="status" class="form-label">Statut</label>
+              <select id="status" [(ngModel)]="newTodo.status" name="status" class="form-select">
+                <option [value]="0">En cours</option>
+                <option [value]="1">Terminé</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" data-bs-dismiss="modal">Créer</button>
+          </form>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="status">Status</label>
-      <select id="status" [(ngModel)]="newTodo.status" name="status" class="form-control">
-        <option [value]="0">En cours</option>
-        <option [value]="1">Terminé</option>
-      </select>
-    </div>
-    <button type="submit" class="btn btn-primary mt-3">Créer</button>
-  </form>
+  </div>
 </div>
