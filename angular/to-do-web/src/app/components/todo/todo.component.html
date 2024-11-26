@@ -1,0 +1,31 @@
+<div class="container mt-4">
+  <h2>Liste des Tâches</h2>
+  <ul class="list-group mb-4">
+    <li *ngFor="let todo of todos" class="list-group-item">
+      <h5>{{ todo.title }}</h5>
+      <p>{{ todo.description }}</p>
+      <p>Status : {{ todo.status === 0 ? 'En cours' : 'Terminé' }}</p>
+      <small>Créée le : {{ todo.created_at | date:'short' }}</small>
+    </li>
+  </ul>
+
+  <h2>Ajouter une nouvelle tâche</h2>
+  <form (ngSubmit)="createTodo()">
+    <div class="form-group">
+      <label for="title">Titre</label>
+      <input type="text" id="title" [(ngModel)]="newTodo.title" name="title" class="form-control" required />
+    </div>
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" [(ngModel)]="newTodo.description" name="description" class="form-control"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="status">Status</label>
+      <select id="status" [(ngModel)]="newTodo.status" name="status" class="form-control">
+        <option [value]="0">En cours</option>
+        <option [value]="1">Terminé</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Créer</button>
+  </form>
+</div>
