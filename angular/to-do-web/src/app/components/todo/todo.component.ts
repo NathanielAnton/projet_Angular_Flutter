@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Todo } from '../../models/todo.model';
 import { TodoService } from '../../services/todo.service';
+import * as bootstrap from 'bootstrap';
 
 @Component({
   selector: 'app-todo',
@@ -8,7 +9,14 @@ import { TodoService } from '../../services/todo.service';
   styleUrls: ['./todo.component.scss']
 })
 export class TodoComponent implements OnInit {
-  todos: Todo[] = []; // Liste des tâches
+  @ViewChild('addTaskModal', { static: false }) addTaskModal!: ElementRef;
+
+  openModal() {
+    const modalElement = this.addTaskModal.nativeElement;
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+  }
+  todos: Todo[] = [];
   newTodo: Todo = {
     title: '',
     description: '',
@@ -20,7 +28,7 @@ export class TodoComponent implements OnInit {
   constructor(private todoService: TodoService) { }
 
   ngOnInit(): void {
-    this.getTodos(); // Charger les tâches au démarrage
+    this.getTodos();
   }
 
   // Récupère les tâches depuis Firestore

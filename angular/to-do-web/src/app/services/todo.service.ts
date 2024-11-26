@@ -11,14 +11,12 @@ export class TodoService {
 
   constructor(private firestore: AngularFirestore) { }
 
-  // Récupère toutes les tâches
   getTodos(): Observable<Todo[]> {
     return this.firestore.collection<Todo>(this.collectionName).valueChanges({ idField: 'id' });
   }
 
-  // Crée une nouvelle tâche
   createTodo(todo: Todo): Promise<void> {
-    const id = this.firestore.createId(); // Génère un ID unique
+    const id = this.firestore.createId();
     return this.firestore.collection(this.collectionName).doc(id).set(todo);
   }
 }
