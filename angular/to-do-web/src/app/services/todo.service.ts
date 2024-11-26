@@ -19,4 +19,16 @@ export class TodoService {
     const id = this.firestore.createId();
     return this.firestore.collection(this.collectionName).doc(id).set(todo);
   }
+
+  updateTodoStatus(todo: Todo): Promise<void> {
+    return this.firestore.collection(this.collectionName)
+      .doc(todo.id)
+      .update({ status: todo.status });
+  }
+
+  deleteTodo(todoId: string): Promise<void> {
+    return this.firestore.collection(this.collectionName)
+      .doc(todoId)
+      .delete();
+  }
 }

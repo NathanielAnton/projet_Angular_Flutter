@@ -1,5 +1,5 @@
 .container {
-  max-width: 600px;
+  max-width: 90%;
   margin: auto;
 }
 
@@ -11,4 +11,6 @@ form {
   margin-bottom: 5px;
   border: 1px solid #ddd;
   border-radius: 5px;
+  height: auto;
+  width: auto;
 }
