@@ -23,7 +23,7 @@ export class TodoComponent implements OnInit {
   newTodo: Todo = {
     title: '',
     description: '',
-    status: 0, // Par défaut, "en cours"
+    status: 0,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -49,7 +49,6 @@ export class TodoComponent implements OnInit {
     this.newTodo.status = parseInt(this.newTodo.status.toString(), 10);
 
     this.todoService.createTodo(this.newTodo).then(() => {
-      // Réinitialise le formulaire
       this.newTodo = {
         title: '',
         description: '',
@@ -58,7 +57,6 @@ export class TodoComponent implements OnInit {
         updated_at: ''
       };
 
-      // Recharge la liste des tâches
       this.getTodos();
     }).catch((error) => {
       console.error('Erreur lors de la création de la tâche :', error);
@@ -80,10 +78,9 @@ export class TodoComponent implements OnInit {
   }
 
   deleteTodo(todo: Todo): void {
-    if (todo.id) {  // Vérifie si l'ID est défini
+    if (todo.id) {
       this.todoService.deleteTodo(todo.id).then(() => {
         console.log('Tâche supprimée');
-        // Recharger la liste après suppression
         this.getTodos();
       }).catch((error) => {
         console.error('Erreur lors de la suppression de la tâche:', error);

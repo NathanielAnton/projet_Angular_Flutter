@@ -4,7 +4,7 @@ import { TodoComponent } from './components/todo/todo.component';
 
 const routes: Routes = [
   { path: '', component: TodoComponent },
-  { path: '**', redirectTo: '' } // Redirection par défaut
+  { path: '**', redirectTo: '' }
 ];
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

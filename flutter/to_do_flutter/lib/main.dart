@@ -45,7 +45,7 @@ class Todo {
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       status: status,
-      createdAt: DateTime.parse(data['created_at']), // Conversion ISO8601
+      createdAt: DateTime.parse(data['created_at']),
     );
   }
 }
@@ -82,7 +82,7 @@ class _TodoListPageState extends State<TodoListPage> {
 
     todosStream = FirebaseFirestore.instance
         .collection('tasks')
-        .orderBy('created_at') // Tri par date
+        .orderBy('created_at')
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Todo.fromFirestore(doc)).toList());
@@ -157,7 +157,6 @@ class _TodoListPageState extends State<TodoListPage> {
 
     await FirebaseFirestore.instance.collection('tasks').add(newTask);
 
-    // Nettoyage des champs et fermeture du dialogue
     _titleController.clear();
     _descriptionController.clear();
     setState(() {
@@ -301,20 +300,17 @@ class _TodoListPageState extends State<TodoListPage> {
   Future<void> _changeStatus(Todo todo) async {
     int newStatus;
 
-    // Déterminer le nouveau statut
     if (todo.status == 'À faire') {
       newStatus = 1; // "En cours"
     } else if (todo.status == 'En cours') {
       newStatus = 2; // "Terminé"
     } else {
-      // Si le statut est déjà "Terminé", ne pas faire d'action
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cette tâche est déjà terminée.')),
       );
       return;
     }
 
-    // Mise à jour dans Firestore
     await FirebaseFirestore.instance
         .collection('tasks')
         .where('title', isEqualTo: todo.title)
@@ -325,7 +321,6 @@ class _TodoListPageState extends State<TodoListPage> {
       }
     });
 
-    // Afficher une confirmation
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Statut mis à jour avec succès.')),
     );
