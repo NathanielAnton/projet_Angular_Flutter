@@ -70,8 +70,6 @@ export class TodoComponent implements OnInit {
       todo.status = 1;  // "En cours"
     } else if (todo.status === 1) {
       todo.status = 2;  // "Terminé"
-    } else if (todo.status === 2) {
-      todo.status = 0;  // "À faire"
     }
 
     this.todoService.updateTodoStatus(todo).then(() => {

@@ -1,3 +1,18 @@
+// root-level build.gradle
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Dépendances de build, comme les plugins Android
+        classpath 'com.android.tools.build:gradle:7.3.0' // ou la version que tu utilises
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21' // si tu utilises Kotlin
+        classpath 'com.google.gms:google-services:4.3.10' // si tu utilises Firebase
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -5,14 +20,18 @@ allprojects {
     }
 }
 
+// Définir le répertoire de construction du projet racine
 rootProject.buildDir = "../build"
+
 subprojects {
+    // Définir le répertoire de construction pour chaque sous-projet
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
+
+    // Dépendre du projet :app pour les sous-projets (utile si tu utilises plusieurs modules)
     project.evaluationDependsOn(":app")
 }
 
+// Définir une tâche de nettoyage pour supprimer le répertoire de construction
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
