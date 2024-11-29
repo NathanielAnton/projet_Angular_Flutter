@@ -53,6 +53,41 @@
     </div>
   </div>
 
+  <div class="modal fade" id="editTaskModal" #editTaskModal tabindex="-1" aria-labelledby="editTaskModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editTaskModalLabel">Modifier la tâche</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="updateTodo()">
+            <div class="mb-3">
+              <label for="editTitle" class="form-label">Titre</label>
+              <input type="text" id="editTitle" [(ngModel)]="selectedTodo.title" name="editTitle" class="form-control"
+                required />
+            </div>
+            <div class="mb-3">
+              <label for="editDescription" class="form-label">Description</label>
+              <textarea id="editDescription" [(ngModel)]="selectedTodo.description" name="editDescription"
+                class="form-control" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="editStatus" class="form-label">Statut</label>
+              <select id="editStatus" [(ngModel)]="selectedTodo.status" name="editStatus" class="form-select">
+                <option [value]="0">À faire</option>
+                <option [value]="1">En cours</option>
+                <option [value]="2">Terminé</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" data-bs-dismiss="modal">Modifier</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="mb-4">
     <h3 class="mb-3" style="text-align: center;">Liste des Tâches</h3>
 
@@ -70,8 +105,11 @@
                   <span class="badge bg-secondary">À faire</span>
                 </p>
                 <p class="text-muted">Créée le : {{ todo.created_at | date: 'short' }}</p>
-                <button class="btn btn-primary mt-3" (click)="changeStatus(todo)">statut <i
+                <button class="btn btn-primary mt-3" (click)="changeStatus(todo)"><i
                     class="bi bi-arrow-clockwise"></i></button>
+                <button class="btn btn-warning mt-3 ms-2" (click)="editTodo(todo)">
+                  <i class="bi bi-pencil"></i>
+                </button>
                 <button class="btn btn-danger mt-3 ms-2" (click)="deleteTodo(todo)">
                   <i class="bi bi-trash3"></i>
                 </button>
@@ -94,8 +132,11 @@
                   <span class="badge bg-warning">En cours</span>
                 </p>
                 <p class="text-muted">Créée le : {{ todo.created_at | date: 'short' }}</p>
-                <button class="btn btn-primary mt-3" (click)="changeStatus(todo)">statut <i
+                <button class="btn btn-primary mt-3" (click)="changeStatus(todo)"><i
                     class="bi bi-arrow-clockwise"></i></button>
+                <button class="btn btn-warning mt-3 ms-2" (click)="editTodo(todo)">
+                  <i class="bi bi-pencil"></i>
+                </button>
                 <button class="btn btn-danger mt-3 ms-2" (click)="deleteTodo(todo)">
                   <i class="bi bi-trash3"></i>
                 </button>
@@ -118,6 +159,9 @@
                   <span class="badge bg-success">Terminé</span>
                 </p>
                 <p class="text-muted">Créée le : {{ todo.created_at | date: 'short' }}</p>
+                <button class="btn btn-warning mt-3 ms-2" (click)="editTodo(todo)">
+                  <i class="bi bi-pencil"></i>
+                </button>
                 <button class="btn btn-danger mt-3 ms-2" (click)="deleteTodo(todo)">
                   <i class="bi bi-trash3"></i>
                 </button>
