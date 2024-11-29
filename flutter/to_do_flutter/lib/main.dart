@@ -12,12 +12,14 @@ void main() async {
 }
 
 class Todo {
+  String id;
   String title;
   String description;
   String status;
   DateTime createdAt;
 
   Todo({
+    required this.id,
     required this.title,
     required this.description,
     required this.status,
@@ -42,6 +44,7 @@ class Todo {
     }
 
     return Todo(
+      id: doc.id,
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       status: status,
@@ -51,7 +54,7 @@ class Todo {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +66,7 @@ class MyApp extends StatelessWidget {
 }
 
 class TodoListPage extends StatefulWidget {
-  const TodoListPage({Key? key}) : super(key: key);
+  const TodoListPage({super.key});
 
   @override
   _TodoListPageState createState() => _TodoListPageState();
@@ -89,6 +92,11 @@ class _TodoListPageState extends State<TodoListPage> {
   }
 
   void _openAddTaskDialog() {
+    _titleController.clear();
+    _descriptionController.clear();
+    setState(() {
+      _selectedStatus = 'À faire';
+    });
     showDialog(
       context: context,
       builder: (context) {
@@ -148,14 +156,12 @@ class _TodoListPageState extends State<TodoListPage> {
       return;
     }
 
-    final newTask = {
+    await FirebaseFirestore.instance.collection('tasks').add({
       'title': _titleController.text,
       'description': _descriptionController.text,
       'status': _statusToCode(_selectedStatus),
       'created_at': DateTime.now().toIso8601String(),
-    };
-
-    await FirebaseFirestore.instance.collection('tasks').add(newTask);
+    });
 
     _titleController.clear();
     _descriptionController.clear();
@@ -163,6 +169,10 @@ class _TodoListPageState extends State<TodoListPage> {
       _selectedStatus = 'À faire';
     });
     Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Tâche ajoutée avec succès.')),
+    );
   }
 
   int _statusToCode(String status) {
@@ -174,6 +184,124 @@ class _TodoListPageState extends State<TodoListPage> {
       default:
         return 0;
     }
+  }
+
+  Future<void> _changeStatus(Todo todo) async {
+    int newStatus;
+
+    if (todo.status == 'À faire') {
+      newStatus = 1; // "En cours"
+    } else if (todo.status == 'En cours') {
+      newStatus = 2; // "Terminé"
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cette tâche est déjà terminée.')),
+      );
+      return;
+    }
+
+    await FirebaseFirestore.instance
+        .collection('tasks')
+        .doc(todo.id)
+        .update({'status': newStatus});
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Statut mis à jour avec succès.')),
+    );
+  }
+
+  Future<void> _deleteTask(Todo todo) async {
+    await FirebaseFirestore.instance.collection('tasks').doc(todo.id).delete();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Tâche supprimée avec succès.')),
+    );
+  }
+
+  void _openEditTaskDialog(Todo todo) {
+    _titleController.text = todo.title;
+    _descriptionController.text = todo.description;
+    setState(() {
+      _selectedStatus = todo.status;
+    });
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Modifier la tâche'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Titre'),
+              ),
+              TextField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+              ),
+              DropdownButtonFormField<String>(
+                value: _selectedStatus,
+                decoration: const InputDecoration(labelText: 'Statut'),
+                items: const [
+                  DropdownMenuItem(value: 'À faire', child: Text('À faire')),
+                  DropdownMenuItem(value: 'En cours', child: Text('En cours')),
+                  DropdownMenuItem(value: 'Terminé', child: Text('Terminé')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedStatus = value!;
+                  });
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _editTask(todo);
+              },
+              child: const Text('Modifier'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _editTask(Todo todo) async {
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez entrer un titre.')),
+      );
+      return;
+    }
+
+    final updatedTask = {
+      'title': _titleController.text,
+      'description': _descriptionController.text,
+      'status': _statusToCode(_selectedStatus),
+      'created_at': DateTime.now().toIso8601String(),
+    };
+
+    await FirebaseFirestore.instance
+        .collection('tasks')
+        .doc(todo.id)
+        .update(updatedTask);
+
+    _titleController.clear();
+    _descriptionController.clear();
+    setState(() {
+      _selectedStatus = 'À faire';
+    });
+    Navigator.pop(context);
   }
 
   @override
@@ -215,7 +343,6 @@ class _TodoListPageState extends State<TodoListPage> {
 
                   List<Todo> todos = snapshot.data!;
 
-                  // Séparer les tâches par statut
                   List<Todo> todosToDo =
                       todos.where((todo) => todo.status == 'À faire').toList();
                   List<Todo> todosInProgress =
@@ -271,7 +398,21 @@ class _TodoListPageState extends State<TodoListPage> {
                             todo.title,
                             style: TextStyle(color: color),
                           ),
-                          subtitle: Text(todo.description),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(todo.description),
+                              const SizedBox(height: 5),
+                              Text(
+                                'Créé le: ${todo.createdAt.toLocal().toString().split(' ')[0]}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -279,6 +420,11 @@ class _TodoListPageState extends State<TodoListPage> {
                                 icon: const Icon(Icons.autorenew,
                                     color: Colors.blue),
                                 onPressed: () => _changeStatus(todo),
+                              ),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.edit, color: Colors.amber),
+                                onPressed: () => _openEditTaskDialog(todo),
                               ),
                               IconButton(
                                 icon:
@@ -295,46 +441,5 @@ class _TodoListPageState extends State<TodoListPage> {
         ],
       ),
     );
-  }
-
-  Future<void> _changeStatus(Todo todo) async {
-    int newStatus;
-
-    if (todo.status == 'À faire') {
-      newStatus = 1; // "En cours"
-    } else if (todo.status == 'En cours') {
-      newStatus = 2; // "Terminé"
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cette tâche est déjà terminée.')),
-      );
-      return;
-    }
-
-    await FirebaseFirestore.instance
-        .collection('tasks')
-        .where('title', isEqualTo: todo.title)
-        .get()
-        .then((querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        doc.reference.update({'status': newStatus});
-      }
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Statut mis à jour avec succès.')),
-    );
-  }
-
-  Future<void> _deleteTask(Todo todo) async {
-    await FirebaseFirestore.instance
-        .collection('tasks')
-        .where('title', isEqualTo: todo.title)
-        .get()
-        .then((querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        doc.reference.delete();
-      }
-    });
   }
 }
